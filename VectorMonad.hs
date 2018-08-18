@@ -54,6 +54,19 @@ instance Functor (Vector n) => Functor (Vector (S n))
 -- λ fmap (uncurry (+)) $ zip (1 ::: 2 ::: 3 ::: VZ) (4 ::: 5 ::: 6 ::: VZ)
 -- 5 ::: (7 ::: (9 ::: VZ))
 
+instance Applicative (Vector Z)
+  where
+    pure a = VZ
+    _ <*> VZ = VZ
+
+instance Applicative (Vector n) => Applicative (Vector (S n))
+  where
+    pure x = x ::: pure x
+    (f ::: fs) <*> (x ::: xs) = f x ::: fs <*> xs
+
+-- λ liftA2 (+) (1 ::: 2 ::: 3 ::: VZ) (4 ::: 5 ::: 6 ::: VZ)
+-- 5 ::: (7 ::: (9 ::: VZ))
+
 data Matrix (m :: N) (n :: N) a
   where
     MZ :: Matrix Z Z a
