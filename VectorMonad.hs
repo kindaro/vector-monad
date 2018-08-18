@@ -59,10 +59,12 @@ instance Applicative (Vector Z)
     pure a = VZ
     _ <*> VZ = VZ
 
-instance Applicative (Vector n) => Applicative (Vector (S n))
+instance ( Applicative (Vector n)
+         , Zip (Vector n)
+         ) => Applicative (Vector (S n))
   where
     pure x = x ::: pure x
-    (f ::: fs) <*> (x ::: xs) = f x ::: fs <*> xs
+    fs <*> xs = fmap (uncurry ($)) $ zip fs xs
 
 -- λ liftA2 (+) (1 ::: 2 ::: 3 ::: VZ) (4 ::: 5 ::: 6 ::: VZ)
 -- 5 ::: (7 ::: (9 ::: VZ))
