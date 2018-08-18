@@ -11,10 +11,28 @@ module VectorMonad
 
 import Prelude hiding (zip)
 
+
+-- Preliminary definitions.
+-- ========================
+
+
+-- Type level Peano naturals.
+-- --------------------------
+--
+-- _(Inductive definition.)_
+
 data N
   where
     Z :: N
     S :: N -> N
+
+
+-- Vector.
+-- =======
+
+
+-- Trivia.
+-- -------
 
 data Vector (n :: N) a
   where
@@ -24,6 +42,10 @@ data Vector (n :: N) a
 infixr 1 :::
 
 deriving instance Show a => Show (Vector n a)
+
+
+-- Zip Vector.
+-- ----
 
 class Zip z
   where
@@ -43,6 +65,10 @@ instance Zip (Vector Z)
 -- λ zip (1 ::: 2 ::: 3 ::: VZ) (4 ::: 5 ::: 6 ::: VZ)
 -- (1,4) ::: ((2,5) ::: ((3,6) ::: VZ))
 
+
+-- Functor Vector.
+-- ---------------
+
 instance Functor (Vector Z)
   where
     fmap _ VZ = VZ
@@ -53,6 +79,10 @@ instance Functor (Vector n) => Functor (Vector (S n))
 
 -- λ fmap (uncurry (+)) $ zip (1 ::: 2 ::: 3 ::: VZ) (4 ::: 5 ::: 6 ::: VZ)
 -- 5 ::: (7 ::: (9 ::: VZ))
+
+
+-- Applicative Vector.
+-- -------------------
 
 instance Applicative (Vector Z)
   where
@@ -69,6 +99,12 @@ instance ( Applicative (Vector n)
 -- λ liftA2 (+) (1 ::: 2 ::: 3 ::: VZ) (4 ::: 5 ::: 6 ::: VZ)
 -- 5 ::: (7 ::: (9 ::: VZ))
 
+-- Matrix.
+-- =======
+
+-- Trivia.
+-- -------
+
 data Matrix (m :: N) (n :: N) a
   where
     MZ :: Matrix Z Z a
@@ -79,6 +115,10 @@ deriving instance Show a => Show (Matrix m n a)
 
 -- λ Row (1 ::: 2 ::: 3 ::: VZ) :-: (4 ::: 5 ::: 6 ::: VZ)
 -- (:-:) (Row (1 ::: (2 ::: (3 ::: VZ)))) (4 ::: (5 ::: (6 ::: VZ)))
+
+
+-- Functor Matrix.
+-- ---------------
 
 instance {-# OVERLAPS #-}
          ( Functor (Matrix m n)
