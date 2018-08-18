@@ -53,3 +53,38 @@ instance Functor (Vector n) => Functor (Vector (S n))
 
 -- λ fmap (uncurry (+)) $ zip (1 ::: 2 ::: 3 ::: VZ) (4 ::: 5 ::: 6 ::: VZ)
 -- 5 ::: (7 ::: (9 ::: VZ))
+
+data Matrix (m :: N) (n :: N) a
+  where
+    MZ :: Matrix Z Z a
+    (:-:) :: Matrix m n a -> Vector n a -> Matrix (S m) n a
+    (:|:) :: Matrix m n a -> Vector m a -> Matrix m (S n) a
+    Column :: Vector m a -> Matrix m (S Z) a
+    Row :: Vector n a -> Matrix (S Z) n a
+
+deriving instance Show a => Show (Matrix m n a)
+
+instance ( Functor (Matrix m (S n))
+         , Functor (Matrix (S m) n)
+         , Functor (Vector m)
+         , Functor (Vector n)
+         ) => Functor (Matrix (S m) (S n))
+  where
+    fmap f (m :-: v) = fmap f m :-: fmap f v
+    fmap f (m :|: v) = fmap f m :|: fmap f v
+
+instance Functor (Vector n) => Functor (Matrix (S Z) n)
+  where
+    fmap f (Row v) = Row (fmap f v)
+
+instance Functor (Vector m) => Functor (Matrix m (S Z))
+  where
+    fmap f (Column v) = Column (fmap f v)
+
+instance Functor (Matrix Z n)
+  where
+    fmap _ MZ = MZ
+
+instance Functor (Matrix m Z)
+  where
+    fmap _ MZ = MZ
