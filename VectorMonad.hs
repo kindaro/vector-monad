@@ -5,6 +5,9 @@
 {-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeFamilyDependencies #-}
 
 module VectorMonad
   where
@@ -42,6 +45,32 @@ data Vector (n :: N) a
 infixr 1 :::
 
 deriving instance Show a => Show (Vector n a)
+
+
+-- Construction.
+-- -------------
+
+class ConstructVector (n :: N) a
+  where
+    type Whole n a = r | r -> n
+    type Tail n a
+    (+:) :: a -> Tail n a -> Whole n a
+    infixr 1 +:
+
+instance ConstructVector (S (S (S n))) a
+  where
+    type Whole (S (S (S n))) a = Vector (S (S (S n))) a
+    type Tail (S (S (S n))) a = Vector (S (S n)) a
+    x +: v = x ::: v
+
+instance ConstructVector (S (S Z)) a
+  where
+    type Whole (S (S Z)) a = Vector (S (S Z)) a
+    type Tail (S (S Z)) a = a
+    x +: y = x ::: y ::: VZ
+
+-- λ zip @(Vector (S (S (S Z)))) (1 +: 2 +: 3) (4 +: 5 +: 6)
+-- (1,4) ::: ((2,5) ::: ((3,6) ::: VZ))
 
 
 -- Zip Vector.
