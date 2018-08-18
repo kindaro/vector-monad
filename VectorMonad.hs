@@ -127,8 +127,7 @@ instance {-# OVERLAPS #-}
   where
     fmap f (m :-: v) = fmap f m :-: fmap f v
 
-instance ( Functor (Matrix Z n)
-         , Functor (Vector n)
+instance ( Functor (Vector n)
          ) => Functor (Matrix (S Z) n)
   where
     fmap f (Row v) = Row (fmap f v)
