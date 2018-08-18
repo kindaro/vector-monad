@@ -74,7 +74,7 @@ instance ConstructVector (S (S Z)) a
 
 
 -- Zip Vector.
--- ----
+-- -----------
 
 class Zip z
   where
