@@ -182,25 +182,6 @@ instance Foldable (Vector Z)
     foldr _ z VZ = z
 
 
--- Monad Vector,
--- -------------
-
-instance ( Monoid a
-         , Applicative (Vector n)
-         , Zip (Vector n)
-         , Foldable (Vector n)
-         ) => RestrictedJoin (Vector n) a
-  where
-    join = foldl' ((fmap (uncurry mappend) .) . zip) (pure mempty)
-
--- ^
--- λ :{
--- let f = fmap getSum . join . pure . fmap Sum
--- in  f . f . f $ (1 +: 2 +: (3 :: Integer))
--- :}
--- 27 ::: (54 ::: (81 ::: VZ))
-
-
 -- Matrix.
 -- =======
 
@@ -302,13 +283,30 @@ instance Foldable (Matrix Z n)
   where
     foldr _ z _ = z
 
--- Monad Matrix.
--- -------------
 
-instance ( Applicative (Matrix m n)
-         , Zip (Matrix m n)
-         , Foldable (Matrix m n)
+-- Generalized Monad.
+-- ------------------
+--
+--,_Suitable for both Vector & Matrix._
+
+instance ( Applicative m
+         , Zip m
+         , Foldable m
          , Monoid a
-         ) => RestrictedJoin (Matrix m n) a
+         ) => RestrictedJoin m a
   where
     join = foldr ((fmap (uncurry mappend) .) . zip) (pure mempty)
+
+
+-- ^
+-- λ :{
+-- let f = fmap getSum . join . pure . fmap Sum
+-- in  f . f . f $ (1 +: 2 +: (3 :: Integer))
+-- :}
+-- 27 ::: (54 ::: (81 ::: VZ))
+--
+-- λ :{
+-- let f = fmap getSum . join . pure . fmap Sum
+-- in  f . f . f $ MZ :-: (1 +: 2 +: (3 :: Integer)) :-: (2 +: 3 +: 4)
+-- :}
+-- (:-:) ((:-:) MZ (216 ::: (432 ::: (648 ::: VZ)))) (432 ::: (648 ::: (864 ::: VZ)))
