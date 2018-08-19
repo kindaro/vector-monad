@@ -18,6 +18,9 @@ import Prelude hiding (zip)
 -- λ import Control.Applicative
 -- λ :set -XFlexibleContexts
 -- λ :set -XAllowAmbiguousTypes
+-- λ :set -XGADTs
+-- λ :set -XDataKinds
+-- λ :set -XTypeApplications
 
 
 -- Preliminary definitions.
@@ -97,10 +100,17 @@ instance Zip (Vector Z)
     zip _ _ = VZ
 
 -- ^
--- λ :t zip (1 ::: 2 ::: 3 ::: VZ) (4 ::: 5 ::: 6 ::: VZ)
--- zip (1 ::: 2 ::: 3 ::: VZ) (4 ::: 5 ::: 6 ::: VZ)
---   :: (Num a, Num b) => Vector ('S ('S ('S 'Z))) (a, b)
--- λ zip (1 ::: 2 ::: 3 ::: VZ) (4 ::: 5 ::: 6 ::: VZ)
+-- λ :t zip (1 +: 2 +: 3) (4 +: 5 +: 6)
+-- zip (1 +: 2 +: 3) (4 +: 5 +: 6)
+--   :: (Zip z, ConstructVector head1 (Result head2 tail1),
+--       ConstructVector head2 tail1,
+--       ConstructVector head3 (Result head4 tail2),
+--       ConstructVector head4 tail2, Num head1, Num head2, Num tail1,
+--       Num head3, Num head4, Num tail2,
+--       Result head1 (Result head2 tail1) ~ z a,
+--       Result head3 (Result head4 tail2) ~ z b) =>
+--      z (a, b)
+-- λ zip (1 +: 2 +: 3) (4 +: 5 +: 6)
 -- (1,4) ::: ((2,5) ::: ((3,6) ::: VZ))
 
 
@@ -116,7 +126,7 @@ instance Functor (Vector n) => Functor (Vector (S n))
     fmap f (x ::: xs) = f x ::: fmap f xs
 
 -- ^
--- λ fmap (uncurry (+)) $ zip (1 ::: 2 ::: 3 ::: VZ) (4 ::: 5 ::: 6 ::: VZ)
+-- λ fmap (uncurry (+)) $ zip (1 +: 2 +: 3) (4 +: 5 +: 6)
 -- 5 ::: (7 ::: (9 ::: VZ))
 
 
@@ -136,7 +146,7 @@ instance ( Applicative (Vector n)
     fs <*> xs = fmap (uncurry ($)) $ zip fs xs
 
 -- ^
--- λ liftA2 (+) (1 ::: 2 ::: 3 ::: VZ) (4 ::: 5 ::: 6 ::: VZ)
+-- λ liftA2 (+) (1 +: 2 +: 3) (4 +: 5 +: 6)
 -- 5 ::: (7 ::: (9 ::: VZ))
 
 -- Matrix.
@@ -153,7 +163,8 @@ data Matrix (m :: N) (n :: N) a
 
 deriving instance Show a => Show (Matrix m n a)
 
--- λ Row (1 ::: 2 ::: 3 ::: VZ) :-: (4 ::: 5 ::: 6 ::: VZ)
+-- ^
+-- λ Row @_ @Integer (1 +: 2 +: 3) :-: (4 +: 5 +: 6)
 -- (:-:) (Row (1 ::: (2 ::: (3 ::: VZ)))) (4 ::: (5 ::: (6 ::: VZ)))
 
 
@@ -177,5 +188,5 @@ instance Functor (Matrix Z n)
     fmap _ MZ = MZ
 
 -- ^
--- λ fmap (*7) $ Row (1 ::: 2 ::: 3 ::: VZ) :-: (4 ::: 5 ::: 6 ::: VZ)
+-- λ fmap (*7) $ Row @_ @Integer (1 +: 2 +: 3) :-: (4 +: 5 +: 6)
 -- (:-:) (Row (7 ::: (14 ::: (21 ::: VZ)))) (28 ::: (35 ::: (42 ::: VZ)))
