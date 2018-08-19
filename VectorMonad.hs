@@ -53,27 +53,26 @@ deriving instance Show a => Show (Vector n a)
 unit :: a -> Vector (S Z) a
 unit x = x ::: VZ
 
-class ConstructVector n
+type family Result head tail
   where
-    type Head n a
-    type Tail n a
-    (+:) :: Head n a -> Tail n a -> Vector (S n) a
+    Result a a = Vector (S (S Z)) a
+    Result a (Vector (S n) a) = Vector (S (S n)) a
+
+class ConstructVector head tail
+  where
+    (+:) :: head -> tail -> Result head tail
     infixr 1 +:
 
-instance ConstructVector (S Z)
+instance ConstructVector a a
   where
-    type Head (S Z) a = a
-    type Tail (S Z) a = a
     x +: y = x ::: unit y
 
-instance ConstructVector (S (S n))
+instance Result a (Vector (S n) a) ~ Vector (S (S n)) a => ConstructVector a (Vector (S n) a)
   where
-    type Head (S (S n)) a = a
-    type Tail (S (S n)) a = Vector (S (S n)) a
     x +: xs = x ::: xs
 
--- λ (1 +: 2 +: 3) `zip` (4 +: 5 +: 6) :: Vector (S (S (S Z))) (Int,Int)
--- (1,4) ::: ((2,5) ::: ((3,6) ::: VZ))
+-- λ (1 +: 2 +: 3)
+-- 1 ::: (2 ::: (3 ::: VZ))
 
 
 -- Zip Vector.
