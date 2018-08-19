@@ -159,13 +159,12 @@ data Matrix (m :: N) (n :: N) a
   where
     MZ :: Matrix Z n a
     (:-:) :: Matrix m n a -> Vector n a -> Matrix (S m) n a
-    Row :: Vector n a -> Matrix (S Z) n a
 
 deriving instance Show a => Show (Matrix m n a)
 
 -- ^
--- λ Row @_ @Integer (1 +: 2 +: 3) :-: (4 +: 5 +: 6)
--- (:-:) (Row (1 ::: (2 ::: (3 ::: VZ)))) (4 ::: (5 ::: (6 ::: VZ)))
+-- λ MZ @_ @Integer :-: (1 +: 2 +: 3) :-: (4 +: 5 +: 6)
+-- (:-:) ((:-:) MZ (1 ::: (2 ::: (3 ::: VZ)))) (4 ::: (5 ::: (6 ::: VZ)))
 
 
 -- Zip Matrix.
@@ -176,7 +175,6 @@ instance ( Zip (Vector n)
          ) => Zip (Matrix (S m) n)
   where
     zip (m :-: v) (m' :-: v') = zip m m' :-: zip v v'
-    zip (Row v) (Row v') = Row $ zip v v'
 
 instance Zip (Matrix Z n)
   where
@@ -184,11 +182,11 @@ instance Zip (Matrix Z n)
 
 -- ^
 -- λ :{
--- let m  = Row @_ @Integer (1 +: 2 +: 3) :-: (4  +: 5  +: 6 )
---     m' = Row @_ @Integer (7 +: 8 +: 9) :-: (10 +: 11 +: 12)
+-- let m  = MZ @_ @Integer :-: (1 +: 2 +: 3) :-: (4  +: 5  +: 6 )
+--     m' = MZ @_ @Integer :-: (7 +: 8 +: 9) :-: (10 +: 11 +: 12)
 -- in  m `zip` m'
 -- :}
--- (:-:) (Row ((1,7) ::: ((2,8) ::: ((3,9) ::: VZ)))) ((4,10) ::: ((5,11) ::: ((6,12) ::: VZ)))
+-- (:-:) ((:-:) MZ ((1,7) ::: ((2,8) ::: ((3,9) ::: VZ)))) ((4,10) ::: ((5,11) ::: ((6,12) ::: VZ)))
 
 
 -- Functor Matrix.
@@ -199,34 +197,26 @@ instance ( Functor (Matrix m n)
          ) => Functor (Matrix (S m) n)
   where
     fmap f (m :-: v) = fmap f m :-: fmap f v
-    fmap f (Row v) = Row $ fmap f v
 
 instance Functor (Matrix Z n)
   where
     fmap _ MZ = MZ
 
 -- ^
--- λ fmap (*7) $ Row @_ @Integer (1 +: 2 +: 3) :-: (4 +: 5 +: 6)
--- (:-:) (Row (7 ::: (14 ::: (21 ::: VZ)))) (28 ::: (35 ::: (42 ::: VZ)))
+-- λ fmap (*7) $ MZ @_ @Integer :-: (1 +: 2 +: 3) :-: (4 +: 5 +: 6)
+-- (:-:) ((:-:) MZ (7 ::: (14 ::: (21 ::: VZ)))) (28 ::: (35 ::: (42 ::: VZ)))
 
 
 -- Applicative Matrix.
 -- -------------------
 
 instance ( Applicative (Vector n)
-         , Applicative (Matrix (S m) n)
+         , Applicative (Matrix m n)
          , Zip (Vector n)
-         , Zip (Matrix (S m) n)
-         ) => Applicative (Matrix (S (S m)) n)
+         , Zip (Matrix m n)
+         ) => Applicative (Matrix (S m) n)
   where
     pure x = pure x :-: pure x
-    mf <*> mx = fmap (uncurry ($)) $ zip mf mx
-
-instance ( Applicative (Vector n)
-         , Zip (Vector n)
-         ) => Applicative (Matrix (S Z) n)
-  where
-    pure x = Row $ pure x
     mf <*> mx = fmap (uncurry ($)) $ zip mf mx
 
 instance Applicative (Matrix Z n)
@@ -236,8 +226,8 @@ instance Applicative (Matrix Z n)
 
 -- ^
 -- λ :{
--- let m  = Row @_ @Integer (1 +: 2 +: 3) :-: (4  +: 5  +: 6 )
---     m' = Row @_ @Integer (7 +: 8 +: 9) :-: (10 +: 11 +: 12)
+-- let m  = MZ @_ @Integer :-: (1 +: 2 +: 3) :-: (4  +: 5  +: 6 )
+--     m' = MZ @_ @Integer :-: (7 +: 8 +: 9) :-: (10 +: 11 +: 12)
 -- in  pure (*) <*> m <*> m'
 -- :}
--- (:-:) (Row (7 ::: (16 ::: (27 ::: VZ)))) (40 ::: (55 ::: (72 ::: VZ)))
+-- (:-:) ((:-:) MZ (7 ::: (16 ::: (27 ::: VZ)))) (40 ::: (55 ::: (72 ::: VZ)))
