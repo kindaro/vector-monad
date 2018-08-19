@@ -19,7 +19,6 @@ import Prelude hiding (zip)
 -- λ :set -XFlexibleContexts
 -- λ :set -XAllowAmbiguousTypes
 -- λ :set -XGADTs
--- λ :set -XDataKinds
 -- λ :set -XTypeApplications
 
 
