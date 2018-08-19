@@ -168,6 +168,33 @@ deriving instance Show a => Show (Matrix m n a)
 -- (:-:) (Row (1 ::: (2 ::: (3 ::: VZ)))) (4 ::: (5 ::: (6 ::: VZ)))
 
 
+-- Zip Matrix.
+-- -----------
+
+instance {-# OVERLAPS #-}
+         ( Zip (Vector n)
+         , Zip (Matrix m n)
+         ) => Zip (Matrix (S m) n)
+  where
+    zip (m :-: v) (m' :-: v') = zip m m' :-: zip v v'
+
+instance Zip (Vector n) => Zip (Matrix (S Z) n)
+  where
+    zip (Row v) (Row v') = Row $ zip v v'
+
+instance Zip (Matrix Z n)
+  where
+    zip MZ MZ = MZ
+
+-- ^
+-- λ :{
+-- let m  = Row @_ @Integer (1 +: 2 +: 3) :-: (4  +: 5  +: 6 )
+--     m' = Row @_ @Integer (7 +: 8 +: 9) :-: (10 +: 11 +: 12)
+-- in  m `zip` m'
+-- :}
+-- (:-:) (Row ((1,7) ::: ((2,8) ::: ((3,9) ::: VZ)))) ((4,10) ::: ((5,11) ::: ((6,12) ::: VZ)))
+
+
 -- Functor Matrix.
 -- ---------------
 
