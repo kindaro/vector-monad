@@ -298,6 +298,9 @@ instance ( Foldable (Vector n)
         elems :: Foldable f => f a -> [a]
         elems = foldr (:) []
 
+instance Foldable (Matrix Z n)
+  where
+    foldr _ z _ = z
 
 -- Monad Matrix.
 -- -------------
