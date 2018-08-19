@@ -8,14 +8,17 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeFamilyDependencies #-}
+{-# LANGUAGE UndecidableInstances #-}  -- Just for RestrictedJoin => RestrictedMonad.
 
 module VectorMonad
   where
 
 import Prelude hiding (zip)
+import Data.List (foldl')
 
 -- $setup
 -- λ import Control.Applicative
+-- λ import Data.Monoid
 -- λ :set -XFlexibleContexts
 -- λ :set -XAllowAmbiguousTypes
 -- λ :set -XGADTs
@@ -35,6 +38,24 @@ data N
   where
     Z :: N
     S :: N -> N
+
+
+-- A class for `join`.
+-- -------------------
+
+class RestrictedJoin m a
+  where
+    join :: m (m a) -> m a
+
+class RestrictedMonad m a
+  where
+    (>>~) :: m a -> (a -> m a) -> m a
+
+instance ( RestrictedJoin m a
+         , Functor m
+         ) => RestrictedMonad m a
+  where
+    x >>~ f = join . fmap f $ x
 
 
 -- Vector.
@@ -147,6 +168,37 @@ instance ( Applicative (Vector n)
 -- ^
 -- λ liftA2 (+) (1 +: 2 +: 3) (4 +: 5 +: 6)
 -- 5 ::: (7 ::: (9 ::: VZ))
+
+
+-- Foldable Vector.
+-- ----------------
+
+instance Foldable (Vector n) => Foldable (Vector (S n))
+  where
+    foldr f z (x ::: xs) = foldr f (f x z) xs
+
+instance Foldable (Vector Z)
+  where
+    foldr _ z VZ = z
+
+
+-- Monad Vector,
+-- -------------
+
+instance ( Monoid a
+         , Applicative (Vector n)
+         , Zip (Vector n)
+         , Foldable (Vector n)
+         ) => RestrictedJoin (Vector n) a
+  where
+    join = foldl' ((fmap (uncurry mappend) .) . zip) (pure mempty)
+
+-- ^
+-- λ :{
+-- let f = fmap getSum . join . pure . fmap Sum
+-- in  f . f . f $ (1 +: 2 +: (3 :: Integer))
+-- :}
+-- 27 ::: (54 ::: (81 ::: VZ))
 
 
 -- Matrix.
