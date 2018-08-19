@@ -21,17 +21,9 @@ infixr 1 :::
 
 deriving instance Show a => Show (Vector n a)
 
-class Zip z
-  where
-    zip :: z a -> z b -> z (a, b)
-
-instance Zip (Vector n) => Zip (Vector (n + 1))
-  where
-    zip (x ::: xs) (y ::: ys) = (x, y) ::: zip xs ys
-
-instance Zip (Vector 0)
-  where
-    zip _ _ = VZ
+zip :: Vector n a -> Vector n b -> Vector n (a, b)
+zip (x ::: xs) (y ::: ys) = (x, y) ::: zip xs ys
+zip VZ VZ = VZ
 
 -- ^
 -- λ :t zip (1 ::: 2 ::: 3 ::: VZ) (4 ::: 5 ::: 6 ::: VZ)
