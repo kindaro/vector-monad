@@ -171,10 +171,9 @@ deriving instance Show a => Show (Matrix m n a)
 -- Zip Matrix.
 -- -----------
 
-instance {-# OVERLAPS #-}
-         ( Zip (Vector n)
-         , Zip (Matrix m n)
-         ) => Zip (Matrix (S m) n)
+instance ( Zip (Vector n)
+         , Zip (Matrix (S m) n)
+         ) => Zip (Matrix (S (S m)) n)
   where
     zip (m :-: v) (m' :-: v') = zip m m' :-: zip v v'
 
@@ -198,10 +197,9 @@ instance Zip (Matrix Z n)
 -- Functor Matrix.
 -- ---------------
 
-instance {-# OVERLAPS #-}
-         ( Functor (Matrix m n)
+instance ( Functor (Matrix (S m) n)
          , Functor (Vector n)
-         ) => Functor (Matrix (S m) n)
+         ) => Functor (Matrix (S (S m)) n)
   where
     fmap f (m :-: v) = fmap f m :-: fmap f v
 
