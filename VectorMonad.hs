@@ -9,12 +9,15 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeFamilyDependencies #-}
 {-# LANGUAGE UndecidableInstances #-}  -- Just for RestrictedJoin => RestrictedMonad.
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
 
 module VectorMonad
   where
 
 import Prelude hiding (zip)
 import Data.List (foldl')
+import Data.Proxy
 
 -- $setup
 -- λ import Control.Applicative
@@ -23,6 +26,7 @@ import Data.List (foldl')
 -- λ :set -XAllowAmbiguousTypes
 -- λ :set -XGADTs
 -- λ :set -XTypeApplications
+-- λ :set -XDataKinds
 
 
 -- Preliminary definitions.
@@ -38,6 +42,23 @@ data N
   where
     Z :: N
     S :: N -> N
+
+
+-- Conversion to terms for N.
+-- --------------------------
+
+class Term (n :: N)
+  where
+    term :: proxy n -> Int
+
+instance Term Z
+  where term _ = 0
+
+instance Term n => Term (S n) where term _ = succ (term (Proxy @n))
+
+-- ^
+-- λ term $ Proxy @ (S (S (S Z)))
+-- 3
 
 
 -- A class for `join`.
