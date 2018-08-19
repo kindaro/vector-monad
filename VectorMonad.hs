@@ -14,6 +14,11 @@ module VectorMonad
 
 import Prelude hiding (zip)
 
+-- $setup
+-- λ import Control.Applicative
+-- λ :set -XFlexibleContexts
+-- λ :set -XAllowAmbiguousTypes
+
 
 -- Preliminary definitions.
 -- ========================
@@ -71,6 +76,7 @@ instance Result a (Vector (S n) a) ~ Vector (S (S n)) a => ConstructVector a (Ve
   where
     x +: xs = x ::: xs
 
+-- ^
 -- λ (1 +: 2 +: 3)
 -- 1 ::: (2 ::: (3 ::: VZ))
 
@@ -90,6 +96,7 @@ instance Zip (Vector Z)
   where
     zip _ _ = VZ
 
+-- ^
 -- λ :t zip (1 ::: 2 ::: 3 ::: VZ) (4 ::: 5 ::: 6 ::: VZ)
 -- zip (1 ::: 2 ::: 3 ::: VZ) (4 ::: 5 ::: 6 ::: VZ)
 --   :: (Num a, Num b) => Vector ('S ('S ('S 'Z))) (a, b)
@@ -108,6 +115,7 @@ instance Functor (Vector n) => Functor (Vector (S n))
   where
     fmap f (x ::: xs) = f x ::: fmap f xs
 
+-- ^
 -- λ fmap (uncurry (+)) $ zip (1 ::: 2 ::: 3 ::: VZ) (4 ::: 5 ::: 6 ::: VZ)
 -- 5 ::: (7 ::: (9 ::: VZ))
 
@@ -127,6 +135,7 @@ instance ( Applicative (Vector n)
     pure x = x ::: pure x
     fs <*> xs = fmap (uncurry ($)) $ zip fs xs
 
+-- ^
 -- λ liftA2 (+) (1 ::: 2 ::: 3 ::: VZ) (4 ::: 5 ::: 6 ::: VZ)
 -- 5 ::: (7 ::: (9 ::: VZ))
 
@@ -167,5 +176,6 @@ instance Functor (Matrix Z n)
   where
     fmap _ MZ = MZ
 
+-- ^
 -- λ fmap (*7) $ Row (1 ::: 2 ::: 3 ::: VZ) :-: (4 ::: 5 ::: 6 ::: VZ)
 -- (:-:) (Row (7 ::: (14 ::: (21 ::: VZ)))) (28 ::: (35 ::: (42 ::: VZ)))
