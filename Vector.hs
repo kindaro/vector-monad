@@ -6,7 +6,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
 
-module VectorMonad
+module Vector
   where
 
 import Prelude hiding (zip)
@@ -37,19 +37,9 @@ instance Zip (Vector Z)
   where
     zip _ _ = VZ
 
+-- ^
 -- λ :t zip (1 ::: 2 ::: 3 ::: VZ) (4 ::: 5 ::: 6 ::: VZ)
 -- zip (1 ::: 2 ::: 3 ::: VZ) (4 ::: 5 ::: 6 ::: VZ)
 --   :: (Num a, Num b) => Vector ('S ('S ('S 'Z))) (a, b)
 -- λ zip (1 ::: 2 ::: 3 ::: VZ) (4 ::: 5 ::: 6 ::: VZ)
 -- (1,4) ::: ((2,5) ::: ((3,6) ::: VZ))
-
-instance Functor (Vector Z)
-  where
-    fmap _ VZ = VZ
-
-instance Functor (Vector n) => Functor (Vector (S n))
-  where
-    fmap f (x ::: xs) = f x ::: fmap f xs
-
--- λ fmap (uncurry (+)) $ zip (1 ::: 2 ::: 3 ::: VZ) (4 ::: 5 ::: 6 ::: VZ)
--- 5 ::: (7 ::: (9 ::: VZ))
