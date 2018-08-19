@@ -297,3 +297,15 @@ instance ( Foldable (Vector n)
       where
         elems :: Foldable f => f a -> [a]
         elems = foldr (:) []
+
+
+-- Monad Matrix.
+-- -------------
+
+instance ( Applicative (Matrix m n)
+         , Zip (Matrix m n)
+         , Foldable (Matrix m n)
+         , Monoid a
+         ) => RestrictedJoin (Matrix m n) a
+  where
+    join = foldr ((fmap (uncurry mappend) .) . zip) (pure mempty)
