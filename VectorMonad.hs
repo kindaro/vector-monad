@@ -50,27 +50,29 @@ deriving instance Show a => Show (Vector n a)
 -- Construction.
 -- -------------
 
-newtype Id a = Id { coid :: a }
-
-newtype Id2 (n :: N) a = Id2 { coid2 :: a }
-
 unit :: a -> Vector (S Z) a
 unit x = x ::: VZ
 
-class ConstructVector head tail a (n :: N)
+class ConstructVector n
   where
-    (+:) :: head a -> tail n a -> Vector (S n) a
+    type Head n a
+    type Tail n a
+    (+:) :: Head n a -> Tail n a -> Vector (S n) a
+    infixr 1 +:
 
-instance ConstructVector Id Vector a (S n)
+instance ConstructVector (S Z)
   where
-    x +: xs = coid x ::: xs
+    type Head (S Z) a = a
+    type Tail (S Z) a = a
+    x +: y = x ::: unit y
 
-instance ConstructVector Id Id2 a (S Z)
+instance ConstructVector (S (S n))
   where
-    x +: y = coid x ::: unit (coid2 y)
+    type Head (S (S n)) a = a
+    type Tail (S (S n)) a = Vector (S (S n)) a
+    x +: xs = x ::: xs
 
-
--- λ zip @(Vector (S (S (S Z)))) (1 +: 2 +: 3) (4 +: 5 +: 6)
+-- λ (1 +: 2 +: 3) `zip` (4 +: 5 +: 6) :: Vector (S (S (S Z))) (Int,Int)
 -- (1,4) ::: ((2,5) ::: ((3,6) ::: VZ))
 
 
