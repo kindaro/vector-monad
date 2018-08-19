@@ -284,3 +284,16 @@ instance Applicative (Matrix Z n)
 -- in  pure (*) <*> m <*> m'
 -- :}
 -- (:-:) ((:-:) MZ (7 ::: (16 ::: (27 ::: VZ)))) (40 ::: (55 ::: (72 ::: VZ)))
+
+
+-- Foldable Matrix.
+-- ----------------
+
+instance ( Foldable (Vector n)
+         , Foldable (Matrix m n)
+         ) => Foldable (Matrix (S m) n)
+  where
+    foldr f z (v :-: m) = foldr f z $ elems v ++ elems m
+      where
+        elems :: Foldable f => f a -> [a]
+        elems = foldr (:) []
